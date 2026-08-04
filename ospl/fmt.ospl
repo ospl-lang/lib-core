@@ -1,0 +1,87 @@
+***** doc
+The interface for formatting.
+*****
+def Fmt = fn(
+    fmt: fn(): str
+): scope { return scope }
+
+***** doc
+Turns strings into a format item (leaves them unchanged)
+*****
+def strf = fn[Fmt](s:str): @Fmt {
+    return Fmt(
+        fn[s](): str {
+            return s
+        }
+    )
+}
+
+def intf = fn[Fmt](i:int): @Fmt {
+    return Fmt(
+        fn[i](): str {
+            return i as str
+        }
+    )
+}
+
+def floatf = fn[Fmt](i:float): @Fmt {
+    return Fmt(
+        fn[i](): str {
+            return i as str
+        }
+    )
+}
+
+***** doc
+Formats the format items given into a string
+*****
+def format = fn[Fmt](s:str  items:list @Fmt): str
+{
+    def new_str = ""
+
+    def cur = 0u
+    loop {
+        def ch = s:(cur)
+        if ch == undefined { break }
+
+        if ch == "%"C {
+            cur += 1u
+            def ch = s:(cur)
+            cur += 1u
+            if ch == "%"C {
+                new_str += ch
+            }
+
+            if ch == "-"C {
+                def i = items--
+                def string = i.fmt()
+                new_str += string
+            }
+
+            if ch == "+"C {
+                def i = items--
+                def string = i.fmt()
+                new_str += string
+            }
+
+            if ch == "0"C { new_str += items:0.fmt() }
+            if ch == "1"C { new_str += items:1.fmt() }
+            if ch == "2"C { new_str += items:2.fmt() }
+            if ch == "3"C { new_str += items:3.fmt() }
+            if ch == "4"C { new_str += items:4.fmt() }
+            if ch == "5"C { new_str += items:5.fmt() }
+            if ch == "6"C { new_str += items:6.fmt() }
+            if ch == "7"C { new_str += items:7.fmt() }
+            if ch == "8"C { new_str += items:8.fmt() }
+            if ch == "9"C { new_str += items:9.fmt() }
+
+            # we don't know what this is!
+            continue    
+        }
+
+        new_str += ch
+        cur += 1u
+    }
+
+    return new_str
+}

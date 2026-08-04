@@ -1,0 +1,5 @@
+def __panic = foreign fn panicExt "panic" void { ptr };
+
+def panic = fn[__panic](msg:str): any {
+    do foreign __panic(msg);
+};

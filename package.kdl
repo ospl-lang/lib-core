@@ -1,0 +1,35 @@
+name "core"
+entry "__main__"
+versions {
+    rules "api" {
+        int 1 { branch "primary"; }
+        str nightly {}
+        int 0 { gone }
+    }
+}
+
+module "iter" {
+    file "ospl/iter.ospl";
+}
+
+// LIBRARY TESTS
+module "__main__" {
+    import "tests" { from local "tests"; }
+    import "iter" { from local "iter"; }
+    import "con" { from local "con"; }
+    import "map" { from local "map"; }
+    import "fmt" { from local "fmt"; }
+    import "time" { from local "time"; }
+    file "main.ospl"
+}
+
+// OTHER CRAP
+module "con" { file "ospl/con.ospl" }
+module "time" { file "ospl/time.ospl" }
+module "fmt" { file "ospl/fmt.ospl" }
+module "map" { file "ospl/map.ospl" }
+
+module "tests" {
+    import "con" { from local "con"; }
+    file "ospl/tests.ospl"
+}

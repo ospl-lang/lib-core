@@ -1,0 +1,24 @@
+### LIBRARY TESTS FOR CORE
+# must be ran something else with an available console
+def test_runner = fn[iter tests fmt con](builder: @tests.TestSuiteBuilder) {
+    do builder.add("always passes"  fn(): bool {
+        return true
+    })
+
+    do builder.add_would_fail("always fails"  fn(): bool {
+        return false
+    })
+
+    do builder.add("format"  fn[con fmt](): bool {
+        def l = list @fmt.Fmt { }
+        l += (fmt.strf("hello"))
+
+        def s = fmt.format("%+ world"  l)
+        return s == "hello world"
+        # return false
+    })
+
+    do builder.add("gen"  fn[con iter](): bool {
+        return true
+    })
+}

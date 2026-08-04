@@ -1,0 +1,121 @@
+## Hashable interface
+def Hashable = fn(
+    hash: fn(): addr
+): scope { return scope }
+
+## Basic impls
+def hashStr = fn[Hashable](k: str): @Hashable
+{
+    def FNV_PRIME = 1099511628211u
+    return Hashable(
+        fn[k FNV_PRIME](): addr {
+            def hsh = 14695981039346656037u
+            def idx = 0u
+            while idx <= k.len {
+                def ch = k:(idx)
+                hsh = hsh * FNV_PRIME
+                hsh = (k:(idx) as addr) * hsh
+                idx += 1u
+            }
+
+            return hsh 
+        }
+    )
+}
+
+## Map template
+let Key: @Hashable
+let Value: unknown
+
+def Entry = fn[Key Value](
+    hash: Key
+    value: Value
+): scope { return scope }
+
+let Absent: undefined
+let Present: @Entry
+
+def Map = fn[Key Value Entry Absent Present](): scope
+{
+    def __buckets = list list @Entry {}
+
+    ## initialize by filling up to the table size
+    def TABSIZ = 101u
+    while TABSIZ > 0u {
+        __buckets += list @Entry {}
+        TABSIZ -= 1u
+    }
+
+    ## Reset the TABSIZ
+    def TABSIZ = 101u
+
+    ## Define some functions
+    def put = fn[Key Value TABSIZ __buckets Entry](k:Key  v:Value) {
+        def kv = k as @Key
+        def location = kv.hash() % TABSIZ
+
+        # insert!
+        def to_insert = Entry(k  v)
+        def maybe_it_already_exists = __buckets ? to_insert
+        if maybe_it_already_exists == undefined {
+            # no it does not.
+            __buckets:(location) += to_insert
+            return nul
+        }
+
+        # then it must already exist
+        __buckets:(location):(maybe_it_already_exists) = to_insert
+        return nul
+    }
+
+    def get_entry = fn[Key Value __buckets Entry TABSIZ Present Absent](k:Key): Present | Absent {
+        # get the location
+        def kv = k as @Key
+        def location = kv.hash() % TABSIZ
+
+        # get the entries
+        def entries = __buckets:(location)
+
+        # loop to find the one we want
+        def idx = 0u
+        while idx <= entries.len {
+            def e = entries:(idx)
+            if e.hash == k {
+                return e as Present
+            }
+            idx += 1u
+        }
+
+        return undefined as Absent
+    }
+
+    def get = fn[get_entry Key Value Entry Present Absent](k:Key): Present | Absent {
+        def x = get_entry(k)
+        if def p: Present = x {
+            return p
+        }
+        return undefined as Absent
+    }
+
+    def remove = fn[__buckets TABSIZ Key Value Entry Present Absent](k:Key): Present | Absent {
+        # get the location
+        def kv = k as @Key
+        def location = kv.hash() % TABSIZ
+
+        def entries = __buckets:(location)
+
+        def idx = 0u
+        while idx <= entries.len {
+            def e = entries:(idx)
+            if e.hash == k {
+                entries -= idx
+                def x = e.value as @Entry
+                return x
+            }
+        }
+
+        return undefined as Absent
+    }
+
+    return scope
+}

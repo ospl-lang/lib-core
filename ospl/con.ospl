@@ -1,0 +1,47 @@
+def ENDL = "
+"
+
+let TS: unknown
+let Colour: unknown
+let Unit: unknown
+let Unsupported: undefined
+
+def VisualProvider = fn[TS Unsupported Colour Unit](
+	def setxy: fn(addr addr): Unit
+	def clear: fn(): Unit
+
+    def fg: fn(Colour): Unit
+    def bg: fn(Colour): Unit
+	def Black:          Colour
+	def Blue:           Colour
+	def Red:            Colour
+	def Yellow:         Colour
+	def Green:          Colour
+	def Magenta:        Colour
+	def Cyan:           Colour
+	def White:          Colour
+	def DefaultColour:  Colour
+
+    def style: fn(TS): Unit
+	def Reset:          TS
+	def Underline:      TS | Unsupported
+	def Strikethrough:  TS | Unsupported
+	def Blinking:       TS | Unsupported
+	def Hidden:         TS | Unsupported
+	def Dim:            TS | Unsupported
+	def Italic:         TS | Unsupported
+	def Inverse:        TS | Unsupported
+	def Bold:           TS | Unsupported
+): scope { return scope }
+
+def Console = fn[Unit VisualProvider](
+	# print
+	def print: fn(Unit)
+	def input: fn(): Unit
+	def flush: fn()
+): scope { return scope }
+
+def SupportsVisualConsole = fn[Unit Console VisualProvider](
+    def con:    @Console
+    def visual: @VisualProvider
+): scope { return scope }

@@ -1,0 +1,43 @@
+let T: unknown;
+
+def Option = fn[T](
+    map: fn(
+        fn(T): T
+        fn(): T
+    ): T
+): scope { return scope; };
+
+def Some = fn[Option T](x:T): @Option
+{
+    def map = fn[x T](
+        f1: fn(T): T
+        f2: fn(): T
+    ): T
+    {
+        return f1(x);
+    };
+
+    return Option(map);
+};
+
+def None = fn[panic Option T](): @Option
+{
+    def map = fn[panic T](
+        f1: fn(T): T
+        f2: fn(): T
+    ): T
+    {
+        do panic.panic(".unwrap() called on a None value");
+        return f2();
+    };
+
+    return Option(map);
+};
+
+def unwrap = fn[panic Option T](x: @Option): @T
+{
+    return x.map(
+        fn[T](x:T): T { return x; }
+        fn[panic T](): T { return panic.panic(".unwrap() called on a None value"); }
+    );
+};

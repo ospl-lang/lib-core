@@ -1,0 +1,59 @@
+# The units used to measure time
+let Seconds: float
+let Milliseconds: float
+let Mircoseconds: float
+
+***** doc
+Represents a single point in time
+*****
+def Timestamp = fn[Seconds Milliseconds Mircoseconds](
+    __Timestamp_data: Seconds
+): scope
+{
+    def s = fn[__Timestamp_data Seconds]()         : Seconds { return __Timestamp_data }
+    def ms = fn[__Timestamp_data Milliseconds]()   : Milliseconds { return ((__Timestamp_data@) * 1000f) as Milliseconds }
+    def us = fn[__Timestamp_data Mircoseconds]()   : Mircoseconds { return ((__Timestamp_data@) * 1000000f) as Mircoseconds }
+
+    return scope
+}
+
+def sec_to_ts = fn[Seconds Timestamp](s: float): @Timestamp {
+    return Timestamp(s as Seconds)
+}
+
+***** doc
+Represents a duration of time rather than a single point in time.
+*****
+def Duration = fn[Seconds Timestamp](
+    __Duration_start: @Timestamp
+    __Duration_end:   @Timestamp
+): scope
+{
+    def amount = fn[Seconds __Duration_start __Duration_end](): Seconds {
+        return ((__Duration_end.__Timestamp_data@) - (__Duration_start.__Timestamp_data@)) as Seconds
+    }
+    return scope
+}
+
+def between = fn[Duration Timestamp](ts1: @Timestamp  ts2: @Timestamp): @Duration
+{
+    return Duration(ts1  ts2)
+}
+
+def dur = (fn[Seconds Timestamp Duration](): scope
+{
+    def s = fn[Seconds Timestamp Duration](s: Seconds): @Duration {
+        return Duration(
+            Timestamp(0f as Seconds)
+            Timestamp(s)
+        )
+    }
+    return scope
+
+    def zero = fn[Seconds Timestamp Duration](): @Duration {
+        return Duration(
+            Timestamp(0f as Seconds)
+            Timestamp(0f as Seconds)
+        )
+    }
+})()

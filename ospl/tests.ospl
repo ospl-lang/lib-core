@@ -1,0 +1,120 @@
+def Test = fn(
+    name:           str
+    should_fail:    bool
+    handler:        fn(): bool
+): scope { return scope }
+
+def TestResult = fn(
+    name:str
+    ok:bool
+): scope { return scope }
+
+def TestSuiteBuilder = fn[Test](): scope
+{
+    def __tests = list @Test {}
+
+    *****
+    Adds a normal test
+    *****
+    def add = fn[Test __tests](name:str  f:fn(): bool)
+    {
+        __tests += Test(
+            name
+            false
+            f
+        )
+    }
+
+    ***** doc
+    Adds a test that should fail
+    *****
+    def add_would_fail = fn[Test __tests](name:str  f:fn(): bool)
+    {
+        __tests += Test(
+            name
+            true
+            f
+        )
+    }
+
+    *****
+    Returns the list of tests
+    *****
+    def finish = fn[Test __tests](): list @Test {
+        return __tests
+    }
+
+    return scope
+}
+
+def run_tests = fn[con Test TestResult TestSuiteBuilder](
+    build: fn(@TestSuiteBuilder)
+    out: @con.SupportsVisualConsole[con.Unit:str]
+)
+{
+    def tests = TestSuiteBuilder()
+    do build(tests)
+    def tests = tests.finish()
+
+    ## print how many tests we're running
+    do out.con.print("running ")
+    do out.con.print(tests.len as str)
+    do out.con.print(" tests")
+    do out.con.print(con.ENDL)
+
+    def results = list @TestResult {}
+    # def test = tests--
+    # loop
+    for test  tests--
+    {
+        ## debug output
+        do out.con.print("================== ")
+        do out.con.print(test.name)
+        do out.con.print(" ==================")
+        if test.should_fail {
+            do out.con.print(" (should fail)")
+        }
+        do out.con.print(con.ENDL)
+
+        ## run the test
+        def result = test.handler()
+        if test.should_fail {
+            result = result!
+        }
+
+        results += TestResult(
+            test.name
+            result
+        )
+    }
+
+    do out.con.print("summary (green means pass, red means fail):")
+    do out.con.print(con.ENDL)
+    def passes = 0u
+    def fails = 0u
+    for res   results-- {
+        if res.ok {
+            do out.con.print(out.visual.fg(out.visual.Green))
+            do out.con.print(" - √ ")
+            passes += 1u
+        }
+
+        else {
+            do out.con.print(out.visual.fg(out.visual.Red))
+            do out.con.print(" - x ")
+            fails += 1u
+        }
+
+        do out.con.print(res.name)
+        do out.con.print(con.ENDL)
+        do out.con.print(out.visual.fg(out.visual.DefaultColour))
+    }
+
+    do out.con.print(passes as str)
+    do out.con.print(" passed, ")
+    do out.con.print(fails as str)
+    do out.con.print(" failed.")
+    do out.con.print(con.ENDL)
+
+    return nul
+}
